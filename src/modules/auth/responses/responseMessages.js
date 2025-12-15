@@ -1,0 +1,28 @@
+export const responseMessages = {
+    success: {
+      USER_REGISTERED: 'User registered successfully.',
+      USER_LOGGED_IN: 'User logged in successfully.',
+      USER_DETAILS_FETCHED: 'User details fetched successfully.',
+      SIGNED_URL_GENERATED: 'Signed URL generated successfully.',
+      EMAIL_VERIFIED: 'Email verified successfully.',
+      ACCOUNT_DELETED: 'Account deleted successfully.',
+      PASSWORD_UPDATED: 'Password reset successfully.',
+      PROFILE_UPDATED: 'Profile updated successfully.',
+      RESET_EMAIL_SENT: 'Password reset email sent successfully.',
+      RESET_LINK_VERIFIED: 'Password reset link verified successfully.',
+    },
+    fail: {
+      USER_NOT_FOUND: 'User not found.',
+      INVALID_PASSWORD: 'Invalid password.',
+      DUPLICATE_EMAIL: 'Email address is already in use.',
+      DUPLICATE_PHONE: 'Phone number is already in use.',
+      INVALID_CREDENTIALS: 'Invalid credentials.',
+      ACCOUNT_NOT_VERIFIED: 'Account not verified. Please check your email for verification code.',
+      INVALID_PATH: 'Invalid path provided.',
+      EMAIL_ALREADY_REGISTERED: 'Email address already registered.',
+      AUTH_FAILED: 'Authentication failed.',
+      INTERNAL_SERVER_ERROR: 'There was an error processing your request. Please try again later.',
+      MISSING_FIELDS: 'Required fields are missing. Please provide all necessary information.',
+      UNAUTHORIZED_ACCESS: 'You do not have permission to access this resource.',
+    },
+  };
