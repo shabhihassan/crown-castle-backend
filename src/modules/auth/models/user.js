@@ -56,7 +56,6 @@ UserSchema.pre("findOneAndUpdate", async function (next) {
 UserSchema.methods.getSignedJwtToken = function () {
   return generateToken({
     _id: this._id,
-    type: this.type,
     emailAddress: this.emailAddress,
   });
 };

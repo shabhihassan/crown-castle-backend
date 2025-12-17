@@ -11,7 +11,6 @@ const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN
  * @returns {string} A signed JWT token.
  */
 export const generateToken = (payload) => {
-    console.log('payload:', payload); // Log the payload for debugging
   return jwt.sign(payload , JWT_SECRET, { expiresIn: JWT_EXPIRES_IN});
 };
 
