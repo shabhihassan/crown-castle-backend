@@ -7,7 +7,8 @@ import status from "http-status";
 import User from "../models/user.js";
 import dotenv from "dotenv";
 dotenv.config();
-
+import { getPublicUrl } from "../../../utils/s3/s3.js";
+import { generateSignedUrl } from "../../../utils/s3/s3.js";
 /**
  * Login admin and return token
  */
@@ -226,30 +227,30 @@ export const editProfile = async (req, res) => {
  * @param {object} res - The Express response object.
  */
 
-// export const getSignedUrl = async (req, res) => {
-//   const { path, type = ACL.PRIVATE } = req.query;
+export const getSignedUrl = async (req, res) => {
+  const { path, type = ACL.PRIVATE } = req.query;
 
-//   if (!path) {
-//     return ResponseHandler.fail(
-//       res,
-//       responseMessages.fail.INVALID_PATH,
-//       status.BAD_REQUEST
-//     );
-//   }
+  if (!path) {
+    return ResponseHandler.fail(
+      res,
+      responseMessages.fail.INVALID_PATH,
+      status.BAD_REQUEST
+    );
+  }
 
-//   let url;
-//   if (type === ACL.PUBLIC) {
-//     url = getPublicUrl(path);
-//   } else {
-//     url = await generateSignedUrl(path);
-//   }
+  let url;
+  if (type === ACL.PUBLIC) {
+    url = getPublicUrl(path);
+  } else {
+    url = await generateSignedUrl(path);
+  }
 
-//   return ResponseHandler.success(
-//     res,
-//     url,
-//     responseMessages.success.SIGNED_URL_GENERATED
-//   );
-// };
+  return ResponseHandler.success(
+    res,
+    url,
+    responseMessages.success.SIGNED_URL_GENERATED
+  );
+};
 
 /**
  * Send password reset link to user's email

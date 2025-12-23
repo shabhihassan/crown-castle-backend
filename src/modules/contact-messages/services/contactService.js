@@ -3,6 +3,9 @@ import ResponseHandler from "../../../utils/ResponseHandler.js";
 import { responseMessages } from "../responses/responseMessages.js";
 import ContactMessages from "../models/contact-message.js";
 import { paginationStage, keywordSearchStage } from "../../../utils/helpers.js";
+import { sendEmail } from "../../../utils/emails/email.js";
+import { adminEmails } from "../../../utils/config/config.js";
+import { TemplateName } from "../../../utils/common/enums/templates.js";
 /**
  * CREATE – Submit contact us form
  */
@@ -25,6 +28,23 @@ export const createContactMessage = async (req, res) => {
       emailAddress,
       message,
     });
+
+    // notify admins of contact details
+    if (contactMessage) {
+      const contactData = {
+        firstName: contactMessage.firstName,
+        lastName: contactMessage.lastName,
+        emailAddress: contactMessage.emailAddress,
+        message: contactMessage.message,
+        logoUrl: "https://www.crowncastleproperties.com/images/logo.svg",
+        createdAt: new Date(),
+      };
+      await sendEmail(
+        adminEmails,
+        TemplateName.CONTACT_MESSAGE_ADMIN,
+        contactData
+      );
+    }
 
     return ResponseHandler.success(
       res,
@@ -95,7 +115,14 @@ export const getAllContactMessages = async (req, res) => {
 
     // Build match stage dynamically
     const matchStage = {
-        ...(keyword ? keywordSearchStage(keyword, ["firstName", "lastName", "emailAddress", "message"]) : {}),
+      ...(keyword
+        ? keywordSearchStage(keyword, [
+            "firstName",
+            "lastName",
+            "emailAddress",
+            "message",
+          ])
+        : {}),
     };
 
     const contactMessages = await ContactMessages.aggregate([

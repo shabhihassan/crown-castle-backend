@@ -8,3 +8,7 @@ export const allowedDomains = [
   "http://admin.crowncastleproperties.com",
 ];
 
+export const adminEmails = [
+//   "shabhihassan@outlook.com",
+  "shabhihassan28@gmail.com",
+];
