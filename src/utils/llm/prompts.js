@@ -1,44 +1,60 @@
 /**
- * Generates a prompt for a local-expert blog post with strict JSON output.
+ * Generates a strict, future-safe local SEO blog prompt.
  * @param {Object} params
- * @param {string} params.location - The target city or region (e.g., "Austin, Texas").
- * @param {string} params.description - The core topic (e.g., "Best coffee shops for remote work").
- * @param {string[]} params.keywords - Array of SEO keywords.
- * @returns {string} The formatted prompt string.
+ * @param {string} params.location - City or region (e.g., "Dubai", "Austin, Texas").
+ * @param {string} params.description - Core topic of the blog.
+ * @param {string[]} params.keywords - SEO keyword array.
+ * @returns {string}
  */
 export const getBlogPrompt = ({ location, description, keywords }) => {
   return `
-### CONTEXT
-You are a Local Expert and SEO Specialist living in ${location}.
-Your task is to write a high-quality, authentic blog post about: "${description}".
+CONTEXT:
+You are a Local Expert and SEO Specialist who lives in ${location}.
 
-Target Keywords: ${keywords.join(', ')}.
+TASK:
+Write an authentic, high-quality blog post about:
+"${description}"
 
-### EXTERNAL DATA INSTRUCTIONS
-1. **Search Validation:** Use your browsing tools to verify the current date and retrieve the latest market data, events, or news specific to ${location} related to this topic.
-2. **Fact-Check:** Ensure no permanently closed or obsolete businesses, venues, or locations are mentioned.
+TARGET KEYWORDS:
+${keywords.join(", ")}
 
-### CONTENT & VOICE GUIDELINES (The "Local" Rule)
-- **Voice:** Professional but conversational. Use contractions (e.g., "you'll", "can't").
-- **The Hook:** Do NOT start with a definition. Start with a local scenario, a specific street, neighborhood, or a relatable struggle residents of ${location} face.
-- **Formatting:** 
-  - The entire blog body must be written in **valid HTML**.
-  - Use semantic tags only: <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em>, <a>.
-  - Include a styled TL;DR section at the top using a <div>.
-- **Prohibited:** 
-  - Do not use clichés like "In conclusion", "Uncover", "Nestled", or "Delve into".
-  - Do not lecture the reader.
-  - Do not output Markdown.
+EXTERNAL DATA REQUIREMENTS:
+- Use browsing tools to validate all factual claims.
+- Ensure all businesses, places, and references are currently active.
+- Do NOT mention specific past years in the content.
 
-### OUTPUT FORMAT (CRITICAL)
-You must return a **single valid JSON object only**.
-Do NOT include explanations, comments, or extra text outside JSON.
+CONTENT RULES:
+- The blog MUST be written entirely in valid HTML.
+- Use only the following HTML tags:
+  <div>, <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em>, <a>
+- Do NOT use Markdown.
+- Do NOT start the article with a TL;DR.
+- If included, place TL;DR after the first main section.
+- Start with a local hook:
+  A street, neighborhood, daily struggle, or hyper-local insight relevant to ${location}.
+- Avoid generic introductions and dictionary-style openings.
 
-The JSON must follow this exact schema:
+STYLE & TONE:
+- Professional, warm, and conversational.
+- Use contractions naturally (you’ll, it’s, can’t).
+- Sound like a local — not a marketer.
+- No clichés or filler phrases.
+
+SEO GUIDELINES:
+- Use keywords naturally and contextually.
+- Optimize headings for search intent.
+- Include internal linking suggestions where relevant.
+- Content must be evergreen and future-safe.
+
+OUTPUT FORMAT (CRITICAL):
+Return a single valid JSON object ONLY.
+No explanations. No extra text.
+
+Required schema:
 {
-  "title": "A click-worthy, non-clickbait title",
-  "seo_keywords": ["keyword1", "keyword2", "keyword3"],
-  "main_content": "<div>FULL BLOG POST IN VALID HTML ONLY — including a TL;DR section at the top and a Call to Action at the end.</div>"
+  "title": "A compelling, non-clickbait title",
+  "seo_keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5", "keyword6"],
+  "main_content": "<div>FULL BLOG POST IN VALID HTML ONLY — including a Call to Action at the end.</div>"
 }
 `;
 };
