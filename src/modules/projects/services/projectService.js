@@ -9,7 +9,7 @@ import { deleteFile } from "../../../utils/s3/s3.js";
  * CREATE – Create new project (Admin)
  */
 export const createProject = async (req, res) => {
-  const { title, description } = req.body;
+  const { title, description, tagline } = req.body;
   const image = req.files?.images?.[0]?.key;
   try {
     if (!title || !description || !image) {
@@ -22,6 +22,7 @@ export const createProject = async (req, res) => {
 
     const project = await Projects.create({
       title,
+      tagline,
       description,
       image,
     });
@@ -102,6 +103,7 @@ export const getAllProjects = async (req, res) => {
         $project: {
           _id: 1,
           title: 1,
+          tagline: 1,
           description: 1,
           image: 1,
           createdAt: 1,
@@ -142,12 +144,12 @@ export const getAllProjects = async (req, res) => {
  */
 export const updateProject = async (req, res) => {
   const { id } = req.params;
-  const { title, description } = req.body;
+  const { title, description, tagline } = req.body;
   const image = req.files?.images?.[0]?.key;
 
   try {
     const project = await Projects.findById(id);
-
+    const oldImage = project.image;
     if (!project) {
       return ResponseHandler.fail(
         res,
@@ -158,11 +160,14 @@ export const updateProject = async (req, res) => {
 
     if (title) project.title = title;
     if (description) project.description = description;
+    if (tagline) project.tagline = tagline;
     if (image) project.image = image;
 
     await project.save();
     //delete file from bucket
-    await deleteFile(project.image)
+    if(image && oldImage){
+      await deleteFile(oldImage)
+    }
     return ResponseHandler.success(
       res,
       { _id: project._id },

@@ -11,9 +11,8 @@ import { deleteFile } from "../../../utils/s3/s3.js";
 export const createTeamMember = async (req, res) => {
   const { name, role, description } = req.body;
   const image = req.files?.images?.[0]?.key;
-
   try {
-    if (!name || !role || !description || !image) {
+    if (!name || !role || !image) {
       return ResponseHandler.fail(
         res,
         responseMessages.fail.MISSING_REQUIRED_FIELDS,

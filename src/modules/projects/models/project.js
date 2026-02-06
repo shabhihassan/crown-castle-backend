@@ -10,6 +10,13 @@ const ProjectSchema = new mongoose.Schema(
       maxlength: [150, "Project title cannot exceed 150 characters"],
     },
 
+    tagline: {
+      type: String,
+      required: [true, "Tag line is required"],
+      trim: true,
+      maxlength: [1000, "Tag line cannot exceed 1000 characters"],
+    },
+
     description: {
       type: String,
       required: [true, "Project description is required"],

@@ -28,7 +28,7 @@ router.post(
       },
     ],
     {
-      fileSizeMB: 5, 
+      fileSizeMB: 10, 
       maxFiles: 1, 
     }
   ),
@@ -67,7 +67,7 @@ router.patch(
       },
     ],
     {
-      fileSizeMB: 5, 
+      fileSizeMB: 10, 
       maxFiles: 1, 
     }
   ),
