@@ -10,14 +10,14 @@ const BlogSchema = new mongoose.Schema(
       maxlength: 200,
     },
 
-    // slug: {
-    //   type: String,
-    //   // required: [true, "Blog slug is required"],
-    //   trim: true,
-    //   lowercase: true,
-    //   unique: true,
-    //   index: true,
-    // },
+    slug: {
+      type: String,
+      // required: [true, "Blog slug is required"],
+      trim: true,
+      lowercase: true,
+      unique: true,
+      index: true,
+    },
 
     excerpt: {
       type: String,

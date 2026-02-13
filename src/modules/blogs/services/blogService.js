@@ -16,7 +16,6 @@ const aiWriter = createModelInstance(UAE_REAL_ESTATE_PRESET);
 export const createBlog = async (req, res) => {
   const {
     title,
-    slug,
     excerpt,
     content,
     metaTitle,
@@ -29,7 +28,6 @@ export const createBlog = async (req, res) => {
   } = req.body;
 
   const featuredImage = req.files?.image?.[0]?.key;
-
   try {
     // if (!title || !slug || !excerpt || !content || !featuredImage) {
     //   return ResponseHandler.fail(
@@ -38,7 +36,7 @@ export const createBlog = async (req, res) => {
     //     status.BAD_REQUEST
     //   );
     // }
-
+    const slug = await generateUniqueSlug(title);
     const blog = await Blogs.create({
       title,
       slug,
@@ -103,6 +101,43 @@ export const getBlogById = async (req, res) => {
 };
 
 /**
+ * GET – Get single blog by slug
+ */
+export const getBlogBySlug = async (req, res) => {
+  const { slug } = req.params;
+
+  try {
+    const match = { slug };
+
+    // If the request is unauthenticated, only return LIVE blogs
+    if (!req.user?._id) match.status = BLOG_STATUS.LIVE;
+
+    const blog = await Blogs.findOne(match).lean();
+
+    if (!blog) {
+      return ResponseHandler.fail(
+        res,
+        responseMessages.fail.DATA_NOT_FOUND,
+        status.NOT_FOUND,
+      );
+    }
+
+    return ResponseHandler.success(
+      res,
+      blog,
+      responseMessages.success.DATA_FETCHED,
+      status.OK,
+    );
+  } catch (error) {
+    return ResponseHandler.fail(
+      res,
+      error.message,
+      status.INTERNAL_SERVER_ERROR,
+    );
+  }
+};
+
+/**
  * GET ALL – Get all blogs with pagination & search
  */
 export const getAllBlogs = async (req, res) => {
@@ -119,7 +154,6 @@ export const getAllBlogs = async (req, res) => {
     const sort = {
       [sortField]: sortOrder === "asc" ? 1 : -1,
     };
-    console.log("re.user", req);
     const matchStage = {
       // If user is NOT authenticated → only show LIVE blogs
       ...(!req.user?._id ? { status: BLOG_STATUS.LIVE } : {}),
@@ -128,7 +162,7 @@ export const getAllBlogs = async (req, res) => {
       ...(req.user?._id && blogStatus ? { status: blogStatus } : {}),
 
       ...(keyword
-        ? keywordSearchStage(keyword, ["title", "excerpt", "content"])
+        ? keywordSearchStage(keyword, ["title", "content"])
         : {}),
     };
     console.log("match stage", matchStage);
@@ -139,11 +173,11 @@ export const getAllBlogs = async (req, res) => {
           title: 1,
           status: 1,
           slug: 1,
-          excerpt: 1,
           featuredImage: 1,
           status: 1,
           publishedAt: 1,
           createdAt: 1,
+          content: 1,
         },
       },
       paginationStage({
@@ -170,7 +204,45 @@ export const getAllBlogs = async (req, res) => {
     );
   }
 };
+/**
+ * GET – Get latest 3 LIVE blogs for homepage or "latest posts" sections
+ */
+export const getLatestBlogs = async (req, res) => {
+  try {
+    // We strictly want the 3 most recent LIVE blogs
+    const matchStage = {
+      status: BLOG_STATUS.LIVE,
+    };
 
+    const latestBlogs = await Blogs.aggregate([
+      { $match: matchStage },
+      { $sort: { publishedAt: -1 } }, // Newest first
+      { $limit: 3 }, // Only top 3
+      {
+        $project: {
+          title: 1,
+          slug: 1,
+          featuredImage: 1,
+          publishedAt: 1,
+          excerpt: 1, // Usually helpful for "latest post" cards
+        },
+      },
+    ]);
+
+    return ResponseHandler.success(
+      res,
+      { blogs: latestBlogs },
+      responseMessages.success.DATA_FETCHED,
+      status.OK,
+    );
+  } catch (error) {
+    return ResponseHandler.fail(
+      res,
+      error.message,
+      status.INTERNAL_SERVER_ERROR,
+    );
+  }
+};
 /**
  * UPDATE – Update blog by ID (Admin)
  */
@@ -266,7 +338,7 @@ export const generateBlogContent = async (req, res) => {
     const finalPrompt = getBlogPrompt({
       keywords,
       description,
-      location: "Dubai", 
+      location: "Dubai",
     });
     const result = await aiWriter.generateContent(finalPrompt);
 
@@ -292,7 +364,11 @@ export const generateBlogContent = async (req, res) => {
       200,
     );
   } catch (error) {
-    return ResponseHandler.fail(res, responseMessages.fail.SOMETHING_WENT_WRONG, status.INTERNAL_SERVER_ERROR);
+    return ResponseHandler.fail(
+      res,
+      responseMessages.fail.SOMETHING_WENT_WRONG,
+      status.INTERNAL_SERVER_ERROR,
+    );
   }
 };
 
@@ -304,7 +380,11 @@ export const uploadInlineImage = async (req, res) => {
     const file = req.files?.image?.[0];
 
     if (!file) {
-      return ResponseHandler.fail(res, responseMessages.fail.FILE_UPLOAD, status.BAD_REQUEST);
+      return ResponseHandler.fail(
+        res,
+        responseMessages.fail.FILE_UPLOAD,
+        status.BAD_REQUEST,
+      );
     }
 
     // Return the relative path (key).
@@ -325,4 +405,28 @@ export const uploadInlineImage = async (req, res) => {
       status.INTERNAL_SERVER_ERROR,
     );
   }
+};
+
+/**
+ * Converts a string into a URL-friendly slug and checks for uniqueness.
+ */
+export const generateUniqueSlug = async (title) => {
+  // 1. Basic slugification (Lowercase, remove special chars, replace spaces with dashes)
+  let slug = title
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove non-word chars
+    .replace(/[\s_-]+/g, '-') // Replace spaces/underscores with single dash
+    .replace(/^-+|-+$/g, ''); // Trim dashes from ends
+
+  // 2. Check for existence in DB
+  let exists = await Blogs.findOne({ slug });
+  
+  // 3. If it exists, append a short random string or counter
+  if (exists) {
+    const suffix = Math.random().toString(36).substring(2, 7);
+    slug = `${slug}-${suffix}`;
+  }
+
+  return slug;
 };

@@ -7,6 +7,8 @@ import {
   deleteBlog,
   generateBlogContent,
   uploadInlineImage,
+  getLatestBlogs,
+  getBlogBySlug
 } from "../services/blogService.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
 import { authenticate } from "../../../middleware/authMiddleware.js";
@@ -66,10 +68,19 @@ router.post(
  */
 router.get("/", authenticate, asyncHandler(getAllBlogs));
 
+router.get("/public", asyncHandler(getAllBlogs));
+
+router.get("/latest", asyncHandler(getLatestBlogs));
+
+/**
+ * Public – Get single blog by slug
+ */
+router.get("/slug/:slug", asyncHandler(getBlogBySlug));
+
 /**
  * Public – Get single blog by ID
  */
-router.get("/:id", asyncHandler(getBlogById));
+router.get("/:id", authenticate, asyncHandler(getBlogById));
 
 /**
  * Admin – Update blog
