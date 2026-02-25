@@ -8,7 +8,7 @@ import { BLOG_STATUS } from "../../../utils/common/enums/blog-status.js";
 import { createModelInstance } from "./../../../utils/llm/config.js";
 import { UAE_REAL_ESTATE_PRESET } from "./../../../utils/llm/presets.js";
 import { getBlogPrompt } from "./../../../utils/llm/prompts.js";
-
+import { stringToMongoIds } from "../../../utils/helpers.js";
 const aiWriter = createModelInstance(UAE_REAL_ESTATE_PRESET);
 /**
  * CREATE – Create new blog (Admin)
@@ -207,24 +207,33 @@ export const getAllBlogs = async (req, res) => {
 /**
  * GET – Get latest 3 LIVE blogs for homepage or "latest posts" sections
  */
+/**
+ * GET – Get latest 3 LIVE blogs, optionally skipping a specific ID
+ * (Useful for "Related Posts" or "Read Next" to avoid showing the current blog)
+ */
 export const getLatestBlogs = async (req, res) => {
   try {
-    // We strictly want the 3 most recent LIVE blogs
+    const { excludeId } = req.query; // Capture the ID from query params
+
     const matchStage = {
       status: BLOG_STATUS.LIVE,
     };
 
+    // If an ID is provided, exclude it from the results
+    if (excludeId) {
+      matchStage._id = { $ne: stringToMongoIds(excludeId) };
+    }
+console.log('ma', matchStage)
     const latestBlogs = await Blogs.aggregate([
       { $match: matchStage },
-      { $sort: { publishedAt: -1 } }, // Newest first
-      { $limit: 3 }, // Only top 3
+      { $sort: { publishedAt: -1 } },
+      { $limit: 3 },
       {
         $project: {
           title: 1,
           slug: 1,
           featuredImage: 1,
           publishedAt: 1,
-          excerpt: 1, // Usually helpful for "latest post" cards
         },
       },
     ]);

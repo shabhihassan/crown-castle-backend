@@ -3,9 +3,11 @@ import {
   signup,
   login,
   getUser,
+  getDashboardStats
 } from "../services/authService.js";
 import { asyncHandler } from "../../../utils/asyncHandler.js";
 import { authenticate } from "../../../middleware/authMiddleware.js";
+
 // import { uploadInterceptor } from "../../../utils/s3/s3.js";
 // import { UPLOAD_PATHS } from "../../../utils/s3/uploadPaths.config.js";
 const router = express.Router();
@@ -36,6 +38,7 @@ router.post("/login", asyncHandler(login));
 
 // Get user details route
 router.get("/user", authenticate, asyncHandler(getUser));
+router.get("/stats", authenticate, asyncHandler(getDashboardStats));
 
 // Forgot password route
 // router.post("/forgot-password", asyncHandler(forgotPassword));

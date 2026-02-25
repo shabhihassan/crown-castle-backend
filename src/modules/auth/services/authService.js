@@ -9,6 +9,11 @@ import dotenv from "dotenv";
 dotenv.config();
 import { getPublicUrl } from "../../../utils/s3/s3.js";
 import { generateSignedUrl } from "../../../utils/s3/s3.js";
+import Team from "../../team/models/team.js";
+import Project from "../../projects/models/project.js"
+import Blog from "../../blogs/models/blog.js";
+import ContactMessages from "../../contact-messages/models/contact-message.js"
+import { BLOG_STATUS } from "../../../utils/common/enums/blog-status.js";
 /**
  * Login admin and return token
  */
@@ -252,6 +257,53 @@ export const getSignedUrl = async (req, res) => {
   );
 };
 
+/**
+ * @desc    Fetch dashboard statistics
+ * @route   GET /api/admin/dashboard
+ * @access  Private (Admin)
+ *
+ * This function retrieves aggregated dashboard statistics including:
+ * - Total live blogs
+ * - Total projects
+ * - Total contact messages
+ * - Total team members
+ *
+ * All counts are fetched in parallel using Promise.all for better performance.
+ */
+export const getDashboardStats = async (req, res) => {
+  try {
+    const [
+      totalLiveBlogs,
+      totalProjects,
+      totalMessages,
+      totalTeamMembers,
+    ] = await Promise.all([
+      Blog.countDocuments({ status: BLOG_STATUS.LIVE }),
+      Project.countDocuments(),
+      ContactMessages.countDocuments(),
+      Team.countDocuments(),
+    ]);
+
+    return ResponseHandler.success(
+      res,
+      {
+        stats: {
+          totalLiveBlogs,
+          totalProjects,
+          totalMessages,
+          totalTeamMembers,
+        },
+      },
+      responseMessages.success.DASHBOARD_STATS_FETCHED
+    );
+  } catch (error) {
+    return ResponseHandler.fail(
+      res,
+      error.message,
+      status.INTERNAL_SERVER_ERROR
+    );
+  }
+};
 /**
  * Send password reset link to user's email
  */
