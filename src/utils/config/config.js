@@ -4,6 +4,8 @@ export const allowedDomains = [
   "http://localhost:5173",
   "https://crowncastleproperties.com",
   "http://crowncastleproperties.com",
+  "http://www.crowncastleproperties.com",
+  "https://www.crowncastleproperties.com",
   "https://admin.crowncastleproperties.com",
   "http://admin.crowncastleproperties.com",
 ];
