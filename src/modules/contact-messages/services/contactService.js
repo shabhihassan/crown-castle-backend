@@ -29,7 +29,8 @@ export const createContactMessage = async (req, res) => {
       message,
     });
 
-    // notify admins of contact details
+    // notify admins of contact details (fire-and-forget so a slow/unresponsive
+    // SMTP server can't hold up the HTTP response and cause a gateway timeout)
     if (contactMessage) {
       const contactData = {
         firstName: contactMessage.firstName,
@@ -39,11 +40,13 @@ export const createContactMessage = async (req, res) => {
         logoUrl: "https://www.crowncastleproperties.com/images/logo.svg",
         createdAt: new Date(),
       };
-      await sendEmail(
+      sendEmail(
         adminEmails,
         TemplateName.CONTACT_MESSAGE_ADMIN,
         contactData
-      );
+      ).catch((error) => {
+        console.error("Failed to send contact message admin notification:", error);
+      });
     }
 
     return ResponseHandler.success(

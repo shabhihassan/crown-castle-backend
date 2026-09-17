@@ -12,6 +12,13 @@ const emailConfig = {
     user: process.env.EMAIL_USERNAME,
     pass: process.env.EMAIL_PASSWORD,
   },
+  // Explicit, generous timeouts (ms) so a stalled SMTP server eventually
+  // fails instead of hanging indefinitely. Email sending is fire-and-forget
+  // (see contactService.js), so these can be generous without affecting
+  // HTTP response times.
+  connectionTimeout: 60000,
+  greetingTimeout: 60000,
+  socketTimeout: 60000,
 };
 
 const transporter = nodemailer.createTransport(emailConfig);
